@@ -26,26 +26,43 @@ const addNoteHandler = (request, h) => {
   }).code(500)
 }
 
-const deleteNoteHandler = () => {}
+const deleteNoteHandler = (request, h) => {
+  const { id } = request.params
+  const note = notes.find(item => item.id === id)
+  if (note) {
+    notes.splice(notes.indexOf(note), 1)
+    return h.response({
+      status: 'success',
+      message: 'Note deleted'
+    }).code(200)
+  }
+  return h.response({
+    status: 'fail',
+    message: 'Note not found'
+  }).code(404)
+}
 
 const editNoteHandler = (request, h) => {
   const { id } = request.params
   const { title, tags, body } = request.payload
-  notes.forEach(note => {
-    if (note.id === id) {
-      note.title = title
-      note.tags = tags
-      note.body = body
-      note.updatedAt = new Date().toISOString()
-      return h.response({
-        status: 'success',
-        message: 'Note updated',
-        data: {
-          note
-        }
-      }).code(200)
+  const updatedAt = new Date().toISOString()
+  const noteIndex = notes.findIndex(note => note.id === id)
+  if (!(noteIndex === -1)) {
+    notes[noteIndex] = {
+      ...notes[noteIndex],
+      title,
+      tags,
+      body,
+      updatedAt
     }
-  })
+    return h.response({
+      status: 'success',
+      message: 'Note updated',
+      data: {
+        ...notes[noteIndex]
+      }
+    }).code(200)
+  }
   return h.response({
     status: 'fail',
     message: 'Note not found'
